@@ -1,0 +1,81 @@
+# yaml-language-server: $schema=
+# golangci-lint configuration file
+# Note: linters-settings is valid - editor schema warnings are false positives
+run:
+  timeout: 5m
+  tests: true
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  goconst:
+    min-len: 2
+    min-occurrences: 2
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+    disabled-checks:
+      - dupImport
+      - ifElseChain
+      - octalLiteral
+      - whyNoLint
+      - wrapperFunc
+  gocyclo:
+    min-complexity: 15
+  govet:
+    enable-all: true
+  lll:
+    line-length: 140
+  misspell:
+    locale: US
+  nolintlint:
+    allow-unused: false
+    require-explanation: false
+    require-specific: false
+
+linters:
+  exclusions:
+    paths:
+      - vendor
+      - testdata
+  enable:
+    - bodyclose
+    - errcheck
+    - gocritic
+    - gocyclo
+    - gofmt
+    - goimports
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - lll
+    - misspell
+    - nolintlint
+    - staticcheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - whitespace
+
+issues:
+  # exclude-rules is valid - editor schema warning is a false positive
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gosec
+        - funlen
+        - gocyclo
+    - path: ".*\\.pb\\.go$"
+      text: ".*"
+    - path: ".*\\.gen\\.go$"
+      text: ".*"
+  max-issues-per-linter: 0
+  max-same-issues: 0

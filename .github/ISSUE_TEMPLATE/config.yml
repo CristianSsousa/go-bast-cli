@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/YOUR_USERNAME/go-default-template/discussions
+    about: Ask questions and discuss about the project
+  - name: 📚 Documentation
+    url: https://github.com/YOUR_USERNAME/go-default-template#readme
+    about: Read the project documentation

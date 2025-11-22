@@ -33,6 +33,15 @@ linters-settings:
     line-length: 140
   misspell:
     locale: US
+    ignore-words:
+      - Autor
+      - autor
+      - comando
+      - Comando
+      - comandos
+      - operacional
+      - Operacional
+      - argumentos
   nolintlint:
     allow-unused: false
     require-explanation: false

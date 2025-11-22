@@ -23,22 +23,22 @@ Exemplos:
   bast greet                             # Cumprimenta "Mundo" (padrão)
   bast greet --help                      # Mostra ajuda deste comando`,
 	Run: func(cmd *cobra.Command, args []string) {
-		verbosePrint(cmd, "Processando comando greet...\n")
-		verbosePrint(cmd, "Nome fornecido: '%s'\n", name)
-		verbosePrint(cmd, "Saudação fornecida: '%s'\n", greeting)
+		verbosePrint(cmd, "Processando comando greet...")
+		verbosePrint(cmd, "Nome fornecido: '%s'", name)
+		verbosePrint(cmd, "Saudação fornecida: '%s'", greeting)
 
 		if name == "" {
 			name = "Mundo"
-			verbosePrint(cmd, "Usando nome padrão: 'Mundo'\n")
+			verbosePrint(cmd, "Usando nome padrão: 'Mundo'")
 		}
 		if greeting == "" {
 			greeting = "Olá"
-			verbosePrint(cmd, "Usando saudação padrão: 'Olá'\n")
+			verbosePrint(cmd, "Usando saudação padrão: 'Olá'")
 		}
 
-		verbosePrint(cmd, "Gerando mensagem de cumprimento...\n")
+		verbosePrint(cmd, "Gerando mensagem de cumprimento...")
 		fmt.Printf("%s, %s!\n", greeting, name)
-		verbosePrint(cmd, "Comando greet executado com sucesso.\n")
+		verbosePrint(cmd, "Comando greet executado com sucesso.")
 	},
 }
 

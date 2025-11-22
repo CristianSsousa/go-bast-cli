@@ -1,0 +1,136 @@
+# Configuração do GoReleaser para releases automáticos
+# Documentação: https://goreleaser.com/
+
+project_name: bast
+
+before:
+  hooks:
+    - go mod download
+    - go mod tidy
+
+builds:
+  - id: bast
+    main: .
+    binary: bast
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+    env:
+      - CGO_ENABLED=0
+
+archives:
+  - id: default
+    builds:
+      - bast
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE
+      - config.yaml.example
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshots:
+  name_template: "{{ .Tag }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+release:
+  github:
+    owner: CristianSsousa
+    name: go-bast-cli
+  mode: replace
+  header: |
+    ## Changelog
+  footer: |
+    ## Installation
+
+    ### Via Go Install
+    ```bash
+    go install github.com/CristianSsousa/go-bast-cli@latest
+    ```
+
+    ### Via Binary
+    Download the binary for your platform from the assets below.
+
+    ### Via Homebrew (macOS)
+    ```bash
+    brew install bast
+    ```
+
+nfpm:
+  - id: bast
+    package_name: bast
+    file_name_template: "{{ .ConventionalFileName }}"
+    vendor: CristianSsousa
+    homepage: https://github.com/CristianSsousa/go-bast-cli
+    description: Uma CLI moderna construída com Go e Cobra
+    license: CC0-1.0
+    formats:
+      - deb
+      - rpm
+    dependencies:
+      - bash
+    recommends:
+      - git
+    contents:
+      - src: config.yaml.example
+        dst: /etc/bast/config.yaml.example
+        type: config
+      - src: README.md
+        dst: /usr/share/doc/bast/README.md
+        type: doc
+
+dockers:
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - "cristianssousa/bast:{{ .Tag }}"
+      - "cristianssousa/bast:latest"
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.Commit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+
+brews:
+  - name: bast
+    homepage: https://github.com/CristianSsousa/go-bast-cli
+    description: Uma CLI moderna construída com Go e Cobra
+    license: CC0-1.0
+    test: |
+      system "#{bin}/bast version"
+    install: |
+      bin.install "bast"
+
+scoop:
+  name: bast
+  homepage: https://github.com/CristianSsousa/go-bast-cli
+  description: Uma CLI moderna construída com Go e Cobra
+  license: CC0-1.0
+  persist:
+    - config

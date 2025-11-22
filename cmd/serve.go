@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
+	"github.com/CristianSsousa/go-bast-cli/internal/constants"
 	"github.com/spf13/cobra"
 )
 
@@ -34,8 +36,8 @@ Exemplos:
 func init() {
 	rootCmd.AddCommand(serveCmd)
 
-	serveCmd.Flags().StringVarP(&port, "port", "p", "8080", "Porta do servidor")
-	serveCmd.Flags().StringVarP(&host, "host", "H", "0.0.0.0", "Host do servidor")
+	serveCmd.Flags().StringVarP(&port, "port", "p", strconv.Itoa(constants.DefaultPort), "Porta do servidor")
+	serveCmd.Flags().StringVarP(&host, "host", "H", constants.DefaultHost, "Host do servidor")
 	serveCmd.Flags().StringVarP(&endpoint, "endpoint", "e", "/", "Endpoint principal")
 }
 

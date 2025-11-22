@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/CristianSsousa/go-bast-cli/internal/constants"
 	"github.com/spf13/cobra"
 )
 
@@ -35,8 +36,8 @@ Exemplos:
 			return
 		}
 
-		if port < 1 || port > 65535 {
-			fmt.Printf("Erro: porta deve estar entre 1 e 65535.\n")
+		if port < constants.MinPort || port > constants.MaxPort {
+			fmt.Printf(constants.ErrInvalidPort+"\n", constants.MinPort, constants.MaxPort)
 			return
 		}
 
@@ -49,7 +50,7 @@ func init() {
 	rootCmd.AddCommand(portCmd)
 
 	portCmd.Flags().StringVarP(&portHost, "host", "H", "localhost", "Host para verificar a porta")
-	portCmd.Flags().IntVarP(&portTimeout, "timeout", "t", 3, "Timeout em segundos")
+	portCmd.Flags().IntVarP(&portTimeout, "timeout", "t", constants.DefaultNetworkTimeout, "Timeout em segundos")
 }
 
 func checkPort(cmd *cobra.Command, port int, host string, timeout int) {
@@ -57,7 +58,7 @@ func checkPort(cmd *cobra.Command, port int, host string, timeout int) {
 	verbosePrint(cmd, "Tentando conectar em %s...\n", address)
 
 	timeoutDuration := time.Duration(timeout) * time.Second
-	conn, err := net.DialTimeout("tcp", address, timeoutDuration)
+	conn, err := net.DialTimeout(constants.TCPProtocol, address, timeoutDuration)
 
 	if err != nil {
 		// Se não conseguiu conectar, a porta provavelmente está livre
@@ -66,7 +67,7 @@ func checkPort(cmd *cobra.Command, port int, host string, timeout int) {
 			fmt.Printf("   A porta pode estar fechada ou o host não está acessível.\n")
 			verbosePrint(cmd, "Timeout após %d segundos.\n", timeout)
 		} else {
-			fmt.Printf("✅ Porta %d em %s está DISPONÍVEL\n", port, host)
+			fmt.Printf("✅ "+constants.SuccessPortAvailable+"\n", port, host)
 			verbosePrint(cmd, "Erro de conexão (esperado para porta livre): %v\n", err)
 		}
 		return
@@ -75,7 +76,7 @@ func checkPort(cmd *cobra.Command, port int, host string, timeout int) {
 	defer conn.Close()
 
 	// Se conseguiu conectar, a porta está em uso
-	fmt.Printf("❌ Porta %d em %s está EM USO\n", port, host)
+	fmt.Printf("❌ "+constants.SuccessPortInUse+"\n", port, host)
 	fmt.Printf("   Endereço: %s\n", address)
 	verbosePrint(cmd, "Conexão estabelecida com sucesso, porta está em uso.\n")
 

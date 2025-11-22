@@ -1,0 +1,22 @@
+# Configuração do bast CLI
+# Copie este arquivo para ~/.bast/config.yaml ou ./config.yaml
+
+app:
+  name: "bast"
+  version: "1.0.0"
+  description: "Uma CLI moderna construída com Go e Cobra"
+  author: "CristianSsousa"
+
+logging:
+  level: "info"  # debug, info, warn, error
+  format: "text" # text, json
+
+server:
+  default_port: 8080
+  default_host: "0.0.0.0"
+  timeout: 30
+
+features:
+  auto_update: false
+  verbose: false
+

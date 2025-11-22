@@ -12,6 +12,8 @@ import (
 )
 
 func TestConfigList(t *testing.T) {
+	// Resetar estado global
+	config.Reset()
 	config.Init("")
 
 	// Capturar stdout e stderr
@@ -22,8 +24,12 @@ func TestConfigList(t *testing.T) {
 	os.Stderr = w
 
 	// Executar através do rootCmd com argumentos completos
+	// Desabilitar PersistentPreRun temporariamente para evitar output do rootCmd
+	originalPreRun := rootCmd.PersistentPreRun
+	rootCmd.PersistentPreRun = nil
 	rootCmd.SetArgs([]string{"config", "list"})
 	err := rootCmd.Execute()
+	rootCmd.PersistentPreRun = originalPreRun
 
 	w.Close()
 	os.Stdout = oldStdout
@@ -41,6 +47,8 @@ func TestConfigList(t *testing.T) {
 }
 
 func TestConfigGet(t *testing.T) {
+	// Resetar estado global
+	config.Reset()
 	config.Init("")
 
 	// Capturar stdout e stderr
@@ -50,9 +58,12 @@ func TestConfigGet(t *testing.T) {
 	os.Stdout = w
 	os.Stderr = w
 
-	// Executar através do rootCmd
+	// Desabilitar PersistentPreRun temporariamente
+	originalPreRun := rootCmd.PersistentPreRun
+	rootCmd.PersistentPreRun = nil
 	rootCmd.SetArgs([]string{"config", "get", "app.name"})
 	err := rootCmd.Execute()
+	rootCmd.PersistentPreRun = originalPreRun
 
 	w.Close()
 	os.Stdout = oldStdout
@@ -77,8 +88,12 @@ func TestConfigSet(t *testing.T) {
 		} else {
 			os.Unsetenv("HOME")
 		}
+		// Resetar estado global
+		config.Reset()
 	}()
 
+	// Resetar estado global
+	config.Reset()
 	config.Init("")
 
 	// Capturar stdout e stderr
@@ -88,9 +103,12 @@ func TestConfigSet(t *testing.T) {
 	os.Stdout = w
 	os.Stderr = w
 
-	// Executar através do rootCmd
+	// Desabilitar PersistentPreRun temporariamente
+	originalPreRun := rootCmd.PersistentPreRun
+	rootCmd.PersistentPreRun = nil
 	rootCmd.SetArgs([]string{"config", "set", "app.name", "test-app"})
 	err := rootCmd.Execute()
+	rootCmd.PersistentPreRun = originalPreRun
 
 	w.Close()
 	os.Stdout = oldStdout
@@ -116,8 +134,12 @@ func TestConfigInit(t *testing.T) {
 		} else {
 			os.Unsetenv("HOME")
 		}
+		// Resetar estado global
+		config.Reset()
 	}()
 
+	// Resetar estado global
+	config.Reset()
 	config.Init("")
 
 	// Remover arquivo se existir
@@ -131,9 +153,12 @@ func TestConfigInit(t *testing.T) {
 	os.Stdout = w
 	os.Stderr = w
 
-	// Executar através do rootCmd
+	// Desabilitar PersistentPreRun temporariamente
+	originalPreRun := rootCmd.PersistentPreRun
+	rootCmd.PersistentPreRun = nil
 	rootCmd.SetArgs([]string{"config", "init"})
 	err := rootCmd.Execute()
+	rootCmd.PersistentPreRun = originalPreRun
 
 	w.Close()
 	os.Stdout = oldStdout

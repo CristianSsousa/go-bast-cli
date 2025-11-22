@@ -14,6 +14,7 @@ func TestInit(t *testing.T) {
 	t.Run("init with defaults", func(t *testing.T) {
 		// Resetar para estado limpo
 		Cfg = nil
+		viper.Reset()
 		err := Init("")
 		assert.NoError(t, err)
 		assert.NotNil(t, Cfg)
@@ -23,8 +24,9 @@ func TestInit(t *testing.T) {
 	})
 
 	t.Run("init with non-existent config file", func(t *testing.T) {
-		// Resetar Cfg para garantir estado limpo
+		// Resetar Cfg e viper para garantir estado limpo
 		Cfg = nil
+		viper.Reset()
 		err := Init("/tmp/nonexistent-config-12345.yaml")
 		// Quando o arquivo não existe, deve usar defaults sem erro
 		// Viper retorna ConfigFileNotFoundError que é tratado
@@ -36,6 +38,7 @@ func TestInit(t *testing.T) {
 func TestGet(t *testing.T) {
 	// Resetar para estado limpo
 	Cfg = nil
+	viper.Reset()
 	Init("")
 	cfg := Get()
 	assert.NotNil(t, cfg)
@@ -45,6 +48,7 @@ func TestGet(t *testing.T) {
 func TestSetAndGet(t *testing.T) {
 	// Resetar para estado limpo
 	Cfg = nil
+	viper.Reset()
 	Init("")
 
 	Set("app.name", "test-app")
@@ -55,11 +59,16 @@ func TestSetAndGet(t *testing.T) {
 
 	Set("features.auto_update", true)
 	assert.Equal(t, true, GetBool("features.auto_update"))
+
+	// Limpar estado após teste
+	Cfg = nil
+	viper.Reset()
 }
 
 func TestSave(t *testing.T) {
 	// Resetar para estado limpo
 	Cfg = nil
+	viper.Reset()
 	Init("")
 	Set("app.name", "test-save")
 
@@ -78,6 +87,10 @@ func TestSave(t *testing.T) {
 	if err != nil {
 		t.Logf("Arquivo não encontrado em %s (pode ser esperado em alguns ambientes)", configPath)
 	}
+
+	// Limpar estado após teste
+	Cfg = nil
+	viper.Reset()
 }
 
 func TestDefaults(t *testing.T) {

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -77,8 +78,11 @@ func Init(configPath string) error {
 	// Ler arquivo de configuração
 	if err := viper.ReadInConfig(); err != nil {
 		// Se o arquivo não existe, usar defaults (não é erro)
+		var configFileNotFoundErr viper.ConfigFileNotFoundError
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Arquivo não encontrado é ok, usar defaults
+		} else if errors.As(err, &configFileNotFoundErr) {
+			// Arquivo não encontrado (usando errors.As para compatibilidade)
 		} else if os.IsNotExist(err) {
 			// Arquivo não existe, usar defaults
 		} else {
@@ -159,4 +163,10 @@ func GetInt(key string) int {
 // GetBool retorna um valor bool da configuração
 func GetBool(key string) bool {
 	return viper.GetBool(key)
+}
+
+// Reset reseta a configuração para estado inicial (útil para testes)
+func Reset() {
+	Cfg = nil
+	viper.Reset()
 }

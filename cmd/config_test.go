@@ -47,6 +47,12 @@ func TestConfigList(t *testing.T) {
 }
 
 func TestConfigGet(t *testing.T) {
+	// Remover arquivo de configuração se existir para garantir valores padrão
+	configPath, err := utils.GetConfigPath()
+	if err == nil {
+		os.Remove(configPath)
+	}
+
 	// Resetar estado global
 	config.Reset()
 	config.Init("")
@@ -62,7 +68,7 @@ func TestConfigGet(t *testing.T) {
 	originalPreRun := rootCmd.PersistentPreRun
 	rootCmd.PersistentPreRun = nil
 	rootCmd.SetArgs([]string{"config", "get", "app.name"})
-	err := rootCmd.Execute()
+	err = rootCmd.Execute()
 	rootCmd.PersistentPreRun = originalPreRun
 
 	w.Close()

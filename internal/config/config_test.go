@@ -88,12 +88,24 @@ func TestSave(t *testing.T) {
 		t.Logf("Arquivo não encontrado em %s (pode ser esperado em alguns ambientes)", configPath)
 	}
 
+	// Limpar arquivo de configuração após teste para não afetar outros testes
+	defer func() {
+		os.Remove(configPath)
+	}()
+
 	// Limpar estado após teste
 	Cfg = nil
 	viper.Reset()
 }
 
 func TestDefaults(t *testing.T) {
+	// Remover arquivo de configuração se existir para garantir valores padrão
+	home, err := os.UserHomeDir()
+	if err == nil {
+		configPath := filepath.Join(home, ".bast", "config.yaml")
+		os.Remove(configPath)
+	}
+
 	// Resetar para estado limpo para garantir valores padrão
 	// Importante: resetar viper também para limpar valores anteriores
 	Cfg = nil

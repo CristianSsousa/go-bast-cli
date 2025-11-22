@@ -12,7 +12,7 @@ var (
 )
 
 // Init inicializa o logger com configurações padrão
-func Init(level string, format string) {
+func Init(level, format string) {
 	Log = logrus.New()
 
 	// Configurar nível de log
@@ -46,4 +46,3 @@ func GetLogger() *logrus.Logger {
 	}
 	return Log
 }
-

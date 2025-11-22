@@ -90,5 +90,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "Arquivo de configuração (padrão: ~/.bast/config.yaml)")
 
 	// Bind flags ao Viper
-	viper.BindPFlag("features.verbose", rootCmd.PersistentFlags().Lookup("verbose"))
+	if err := viper.BindPFlag("features.verbose", rootCmd.PersistentFlags().Lookup("verbose")); err != nil {
+		appLog.Warnf("Erro ao vincular flag verbose: %v", err)
+	}
 }

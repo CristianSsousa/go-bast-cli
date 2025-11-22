@@ -169,13 +169,13 @@ func getGitVersion() (string, error) {
 	}
 	// Remove quebra de linha do final
 	version := string(output)
-	if len(version) > 0 && version[len(version)-1] == '\n' {
+	if version != "" && version[len(version)-1] == '\n' {
 		version = version[:len(version)-1]
 	}
 	return version, nil
 }
 
-func getWindowsInstallCommand(cmd *cobra.Command) (*exec.Cmd, string) {
+func getWindowsInstallCommand(cmd *cobra.Command) (installCmd *exec.Cmd, method string) {
 	// Tenta winget primeiro (Windows 10/11 moderno)
 	if isCommandAvailable("winget") {
 		verbosePrint(cmd, "Usando winget como gerenciador de pacotes.\n")
@@ -193,7 +193,7 @@ func getWindowsInstallCommand(cmd *cobra.Command) (*exec.Cmd, string) {
 	return nil, ""
 }
 
-func getLinuxInstallCommand(cmd *cobra.Command) (*exec.Cmd, string) {
+func getLinuxInstallCommand(cmd *cobra.Command) (installCmd *exec.Cmd, method string) {
 	// Detecta o gerenciador de pacotes disponível
 	if isCommandAvailable("apt-get") {
 		verbosePrint(cmd, "Usando apt-get como gerenciador de pacotes.\n")
@@ -226,7 +226,7 @@ func getLinuxInstallCommand(cmd *cobra.Command) (*exec.Cmd, string) {
 	return nil, ""
 }
 
-func getDarwinInstallCommand(cmd *cobra.Command) (*exec.Cmd, string) {
+func getDarwinInstallCommand(cmd *cobra.Command) (installCmd *exec.Cmd, method string) {
 	// macOS - usa Homebrew
 	if isCommandAvailable("brew") {
 		verbosePrint(cmd, "Usando Homebrew como gerenciador de pacotes.\n")

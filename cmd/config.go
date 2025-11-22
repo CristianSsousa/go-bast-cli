@@ -136,7 +136,9 @@ var configResetCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// Resetar para defaults
 		viper.Reset()
-		config.Init("")
+		if err := config.Init(""); err != nil {
+			appLog.Warnf("Erro ao inicializar configuração: %v", err)
+		}
 
 		// Salvar
 		if err := config.Save(); err != nil {

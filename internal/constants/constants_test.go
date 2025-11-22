@@ -50,4 +50,3 @@ func TestFilePermissions(t *testing.T) {
 	assert.NotZero(t, ConfigDirPerm)
 	assert.NotZero(t, ConfigFilePerm)
 }
-

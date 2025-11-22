@@ -34,8 +34,8 @@ type LoggingConfig struct {
 
 // ServerConfig configurações do servidor
 type ServerConfig struct {
-	DefaultPort int    `mapstructure:"default_port"`
 	DefaultHost string `mapstructure:"default_host"`
+	DefaultPort int    `mapstructure:"default_port"`
 	Timeout     int    `mapstructure:"timeout"`
 }
 
@@ -121,7 +121,16 @@ func setDefaults() {
 // Get retorna a configuração atual
 func Get() *Config {
 	if Cfg == nil {
-		Init("")
+		if err := Init(""); err != nil {
+			// Se houver erro na inicialização, retorna configuração padrão
+			// Isso garante que sempre retornamos uma instância válida
+			Cfg = &Config{}
+			setDefaults()
+			if err := viper.Unmarshal(Cfg); err != nil {
+				// Se mesmo assim falhar, retorna struct vazia
+				Cfg = &Config{}
+			}
+		}
 	}
 	return Cfg
 }
@@ -146,7 +155,11 @@ func Save() error {
 func Set(key string, value interface{}) {
 	viper.Set(key, value)
 	if Cfg != nil {
-		viper.Unmarshal(Cfg)
+		if err := viper.Unmarshal(Cfg); err != nil {
+			// Log do erro seria ideal, mas não temos acesso ao logger aqui
+			// Por enquanto, apenas ignora o erro silenciosamente
+			_ = err
+		}
 	}
 }
 

@@ -20,9 +20,18 @@ Exemplos:
   bast info --go         # Mostra apenas informações do Go
   bast info --help       # Mostra ajuda deste comando`,
 	Run: func(cmd *cobra.Command, args []string) {
-		showOS, _ := cmd.Flags().GetBool("os")
-		showGo, _ := cmd.Flags().GetBool("go")
-		showEnv, _ := cmd.Flags().GetBool("env")
+		showOS, err := cmd.Flags().GetBool("os")
+		if err != nil {
+			showOS = false
+		}
+		showGo, err := cmd.Flags().GetBool("go")
+		if err != nil {
+			showGo = false
+		}
+		showEnv, err := cmd.Flags().GetBool("env")
+		if err != nil {
+			showEnv = false
+		}
 
 		// Se nenhuma flag específica foi passada, mostra tudo
 		if !showOS && !showGo && !showEnv {

@@ -54,4 +54,3 @@ func TestGetLogger(t *testing.T) {
 	logger2 := GetLogger()
 	assert.Equal(t, logger, logger2)
 }
-

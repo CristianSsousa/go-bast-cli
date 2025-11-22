@@ -73,4 +73,3 @@ func TestIsDir(t *testing.T) {
 		assert.False(t, IsDir("/tmp/nonexistent-dir-12345"))
 	})
 }
-

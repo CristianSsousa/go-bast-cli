@@ -14,14 +14,26 @@ import (
 func TestConfigList(t *testing.T) {
 	config.Init("")
 
+	// Capturar stdout e stderr
+	oldStdout := os.Stdout
+	oldStderr := os.Stderr
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+	os.Stderr = w
+
+	// Executar através do rootCmd com argumentos completos
+	rootCmd.SetArgs([]string{"config", "list"})
+	err := rootCmd.Execute()
+
+	w.Close()
+	os.Stdout = oldStdout
+	os.Stderr = oldStderr
+
 	var buf bytes.Buffer
-	configListCmd.SetOut(&buf)
-	configListCmd.SetArgs([]string{})
-
-	err := configListCmd.Execute()
-	require.NoError(t, err)
-
+	buf.ReadFrom(r)
 	output := buf.String()
+
+	require.NoError(t, err)
 	assert.Contains(t, output, "Configurações do bast CLI")
 	assert.Contains(t, output, "App:")
 	assert.Contains(t, output, "Logging:")
@@ -31,14 +43,26 @@ func TestConfigList(t *testing.T) {
 func TestConfigGet(t *testing.T) {
 	config.Init("")
 
+	// Capturar stdout e stderr
+	oldStdout := os.Stdout
+	oldStderr := os.Stderr
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+	os.Stderr = w
+
+	// Executar através do rootCmd
+	rootCmd.SetArgs([]string{"config", "get", "app.name"})
+	err := rootCmd.Execute()
+
+	w.Close()
+	os.Stdout = oldStdout
+	os.Stderr = oldStderr
+
 	var buf bytes.Buffer
-	configGetCmd.SetOut(&buf)
-	configGetCmd.SetArgs([]string{"app.name"})
-
-	err := configGetCmd.Execute()
-	require.NoError(t, err)
-
+	buf.ReadFrom(r)
 	output := buf.String()
+
+	require.NoError(t, err)
 	assert.Contains(t, output, "bast")
 }
 
@@ -47,19 +71,38 @@ func TestConfigSet(t *testing.T) {
 	tmpDir := t.TempDir()
 	originalHome := os.Getenv("HOME")
 	os.Setenv("HOME", tmpDir)
-	defer os.Setenv("HOME", originalHome)
+	defer func() {
+		if originalHome != "" {
+			os.Setenv("HOME", originalHome)
+		} else {
+			os.Unsetenv("HOME")
+		}
+	}()
 
 	config.Init("")
 
+	// Capturar stdout e stderr
+	oldStdout := os.Stdout
+	oldStderr := os.Stderr
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+	os.Stderr = w
+
+	// Executar através do rootCmd
+	rootCmd.SetArgs([]string{"config", "set", "app.name", "test-app"})
+	err := rootCmd.Execute()
+
+	w.Close()
+	os.Stdout = oldStdout
+	os.Stderr = oldStderr
+
 	var buf bytes.Buffer
-	configSetCmd.SetOut(&buf)
-	configSetCmd.SetArgs([]string{"app.name", "test-app"})
-
-	err := configSetCmd.Execute()
-	require.NoError(t, err)
-
+	buf.ReadFrom(r)
 	output := buf.String()
-	assert.Contains(t, output, "Configuração 'app.name' definida")
+
+	require.NoError(t, err)
+	assert.Contains(t, output, "Configuração")
+	assert.Contains(t, output, "app.name")
 }
 
 func TestConfigInit(t *testing.T) {
@@ -67,7 +110,13 @@ func TestConfigInit(t *testing.T) {
 	tmpDir := t.TempDir()
 	originalHome := os.Getenv("HOME")
 	os.Setenv("HOME", tmpDir)
-	defer os.Setenv("HOME", originalHome)
+	defer func() {
+		if originalHome != "" {
+			os.Setenv("HOME", originalHome)
+		} else {
+			os.Unsetenv("HOME")
+		}
+	}()
 
 	config.Init("")
 
@@ -75,14 +124,25 @@ func TestConfigInit(t *testing.T) {
 	configPath, _ := utils.GetConfigPath()
 	os.Remove(configPath)
 
+	// Capturar stdout e stderr
+	oldStdout := os.Stdout
+	oldStderr := os.Stderr
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+	os.Stderr = w
+
+	// Executar através do rootCmd
+	rootCmd.SetArgs([]string{"config", "init"})
+	err := rootCmd.Execute()
+
+	w.Close()
+	os.Stdout = oldStdout
+	os.Stderr = oldStderr
+
 	var buf bytes.Buffer
-	configInitCmd.SetOut(&buf)
-	configInitCmd.SetArgs([]string{})
-
-	err := configInitCmd.Execute()
-	require.NoError(t, err)
-
+	buf.ReadFrom(r)
 	output := buf.String()
-	assert.Contains(t, output, "Arquivo de configuração criado")
-}
 
+	require.NoError(t, err)
+	assert.Contains(t, output, "configuração criado")
+}

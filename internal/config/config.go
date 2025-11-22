@@ -76,10 +76,15 @@ func Init(configPath string) error {
 
 	// Ler arquivo de configuração
 	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+		// Se o arquivo não existe, usar defaults (não é erro)
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			// Arquivo não encontrado é ok, usar defaults
+		} else if os.IsNotExist(err) {
+			// Arquivo não existe, usar defaults
+		} else {
+			// Outro tipo de erro ao ler arquivo
 			return fmt.Errorf("erro ao ler arquivo de configuração: %w", err)
 		}
-		// Arquivo não encontrado é ok, usar defaults
 	}
 
 	// Carregar configuração na estrutura

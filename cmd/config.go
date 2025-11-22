@@ -25,6 +25,12 @@ Subcomandos:
   set     - Define uma configuração
   reset   - Reseta todas as configurações para valores padrão
   init    - Cria arquivo de configuração inicial`,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		// Inicializar configuração sem output do rootCmd
+		if err := config.Init(""); err != nil {
+			appLog.Warnf("Erro ao carregar configuração: %v", err)
+		}
+	},
 }
 
 var configListCmd = &cobra.Command{

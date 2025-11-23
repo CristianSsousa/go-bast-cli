@@ -77,7 +77,7 @@ jobs:
             ### Instalação
 
             ```bash
-            go get github.com/CristianSsousa/graftel@${{ steps.version.outputs.version }}
+            go install github.com/CristianSsousa/go-bast-cli@${{ steps.version.outputs.version }}
             ```
 
             ### Documentação

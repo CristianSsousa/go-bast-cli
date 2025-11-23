@@ -61,3 +61,7 @@ func IsDir(path string) bool {
 	}
 	return info.IsDir()
 }
+
+func GetOS() string {
+	return runtime.GOOS
+}

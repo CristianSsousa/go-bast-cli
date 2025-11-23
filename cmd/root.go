@@ -46,6 +46,7 @@ Exemplos:
   bast info                       # Mostra informações do sistema
   bast port 8080                  # Verifica se porta está em uso
   bast config list                # Lista configurações
+  bast update                     # Atualiza o CLI para a versão mais recente
   bast --help                     # Mostra esta mensagem de ajuda`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		// Inicializar configuração

@@ -57,18 +57,44 @@ Exemplos:
   bast env --delete --key MINHA_VAR  # Deleta uma variável de ambiente do usuário
   bast env --help                    # Mostra ajuda deste comando`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		listFlag, _ := cmd.Flags().GetBool("list")
-		getFlag, _ := cmd.Flags().GetBool("get")
-		setFlag, _ := cmd.Flags().GetBool("set")
-		deleteFlag, _ := cmd.Flags().GetBool("delete")
-		keyFlag, _ := cmd.Flags().GetString("key")
-		valueFlag, _ := cmd.Flags().GetString("value")
-		appendFlag, _ := cmd.Flags().GetBool("append")
-		forceFlag, _ := cmd.Flags().GetBool("force")
+		listFlag, err := cmd.Flags().GetBool("list")
+		if err != nil {
+			return fmt.Errorf("erro ao obter flag 'list': %w", err)
+		}
+		getFlag, err := cmd.Flags().GetBool("get")
+		if err != nil {
+			return fmt.Errorf("erro ao obter flag 'get': %w", err)
+		}
+		setFlag, err := cmd.Flags().GetBool("set")
+		if err != nil {
+			return fmt.Errorf("erro ao obter flag 'set': %w", err)
+		}
+		deleteFlag, err := cmd.Flags().GetBool("delete")
+		if err != nil {
+			return fmt.Errorf("erro ao obter flag 'delete': %w", err)
+		}
+		keyFlag, err := cmd.Flags().GetString("key")
+		if err != nil {
+			return fmt.Errorf("erro ao obter flag 'key': %w", err)
+		}
+		valueFlag, err := cmd.Flags().GetString("value")
+		if err != nil {
+			return fmt.Errorf("erro ao obter flag 'value': %w", err)
+		}
+		appendFlag, err := cmd.Flags().GetBool("append")
+		if err != nil {
+			return fmt.Errorf("erro ao obter flag 'append': %w", err)
+		}
+		forceFlag, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			return fmt.Errorf("erro ao obter flag 'force': %w", err)
+		}
 
 		// Validação: pelo menos uma ação deve ser especificada
 		if !listFlag && !getFlag && !setFlag && !deleteFlag {
-			_ = cmd.Usage()
+			if err := cmd.Usage(); err != nil {
+				verbosePrint(cmd, "Erro ao exibir uso: %v", err)
+			}
 			return fmt.Errorf("erro: nenhuma ação especificada\n\nUse 'bast env --list' para listar " +
 				"variáveis\nUse 'bast env --get --key NOME' para buscar uma variável\n" +
 				"Use 'bast env --set --key NOME --value VALOR' para definir uma variável\n" +
@@ -170,9 +196,8 @@ func getEnvironmentVariable(cmd *cobra.Command, key string) error {
 
 // isProtectedVariable verifica se uma variável está na lista de protegidas
 func isProtectedVariable(key string) bool {
-	upperKey := strings.ToUpper(key)
 	for _, protected := range protectedEnvVars {
-		if strings.ToUpper(protected) == upperKey {
+		if strings.EqualFold(protected, key) {
 			return true
 		}
 	}
@@ -181,9 +206,8 @@ func isProtectedVariable(key string) bool {
 
 // isAppendOnlyVariable verifica se uma variável permite apenas append
 func isAppendOnlyVariable(key string) bool {
-	upperKey := strings.ToUpper(key)
 	for _, appendOnly := range appendOnlyEnvVars {
-		if strings.ToUpper(appendOnly) == upperKey {
+		if strings.EqualFold(appendOnly, key) {
 			return true
 		}
 	}

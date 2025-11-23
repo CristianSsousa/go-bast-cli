@@ -39,7 +39,11 @@ Exemplos:
   bast update --check      # Apenas verifica se há atualização disponível
   bast update --help       # Mostra ajuda deste comando`,
 	Run: func(cmd *cobra.Command, args []string) {
-		checkOnly, _ := cmd.Flags().GetBool("check")
+		checkOnly, err := cmd.Flags().GetBool("check")
+		if err != nil {
+			verbosePrint(cmd, "Erro ao obter flag 'check': %v", err)
+			checkOnly = false
+		}
 
 		verbosePrint(cmd, "Iniciando verificação de atualização...")
 		cfg := config.Get()
@@ -84,7 +88,9 @@ Exemplos:
 			return
 		}
 
-		if strings.ToLower(response) != "s" && strings.ToLower(response) != "sim" && strings.ToLower(response) != "y" && strings.ToLower(response) != "yes" {
+		responseLower := strings.ToLower(response)
+		if !strings.EqualFold(responseLower, "s") && !strings.EqualFold(responseLower, "sim") &&
+			!strings.EqualFold(responseLower, "y") && !strings.EqualFold(responseLower, "yes") {
 			fmt.Println("Atualização cancelada.")
 			return
 		}
@@ -92,7 +98,15 @@ Exemplos:
 		fmt.Println("\nAtualizando bast CLI...")
 		verbosePrint(cmd, "Executando: go install github.com/CristianSsousa/go-bast-cli@%s", latestRelease.TagName)
 
-		updateCmd := exec.Command("go", "install", fmt.Sprintf("github.com/CristianSsousa/go-bast-cli@%s", latestRelease.TagName))
+		// Validar tag antes de usar no comando
+		tag := latestRelease.TagName
+		if tag == "" || strings.Contains(tag, " ") {
+			fmt.Fprintf(os.Stderr, "Erro: tag de versão inválida: %s\n", tag)
+			os.Exit(1)
+		}
+
+		//nolint:gosec // tag já foi validada acima
+		updateCmd := exec.Command("go", "install", fmt.Sprintf("github.com/CristianSsousa/go-bast-cli@%s", tag))
 		updateCmd.Stdout = os.Stdout
 		updateCmd.Stderr = os.Stderr
 
@@ -122,7 +136,7 @@ func getLatestRelease() (*githubRelease, error) {
 		Timeout: timeout,
 	}
 
-	req, err := http.NewRequest("GET", githubAPIURL, nil)
+	req, err := http.NewRequest("GET", githubAPIURL, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("erro ao criar requisição: %w", err)
 	}
@@ -167,10 +181,14 @@ func compareVersions(v1, v2 string) int {
 		var num1, num2 int
 
 		if i < len(parts1) {
-			fmt.Sscanf(parts1[i], "%d", &num1)
+			if _, err := fmt.Sscanf(parts1[i], "%d", &num1); err != nil {
+				num1 = 0
+			}
 		}
 		if i < len(parts2) {
-			fmt.Sscanf(parts2[i], "%d", &num2)
+			if _, err := fmt.Sscanf(parts2[i], "%d", &num2); err != nil {
+				num2 = 0
+			}
 		}
 
 		if num1 < num2 {

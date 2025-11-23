@@ -11,6 +11,35 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	// protectedEnvVars lista de variáveis sensíveis que não devem ser modificadas ou deletadas
+	// sem confirmação explícita usando --force
+	protectedEnvVars = []string{
+		// Variáveis críticas do sistema
+		"PATH", "HOME", "USER", "USERNAME", "TEMP", "TMP",
+		// Windows
+		"WINDIR", "SYSTEMROOT", "COMSPEC", "PATHEXT",
+		"PROCESSOR_ARCHITECTURE", "PROCESSOR_IDENTIFIER",
+		"OS", "COMPUTERNAME", "HOMEDRIVE", "HOMEPATH",
+		"APPDATA", "LOCALAPPDATA", "PROGRAMFILES",
+		"PROGRAMFILES(X86)", "COMMONPROGRAMFILES",
+		// Linux/macOS
+		"SHELL", "PWD", "LANG", "LC_ALL", "DISPLAY",
+		"XDG_CONFIG_HOME", "XDG_DATA_HOME", "XDG_CACHE_HOME",
+		// Variáveis de desenvolvimento comuns
+		"GOROOT", "GOPATH", "GOBIN",
+		"JAVA_HOME", "ANDROID_HOME",
+		"NODE_PATH", "NVM_DIR",
+	}
+
+	// appendOnlyEnvVars lista de variáveis protegidas que permitem apenas append (não substituição)
+	// Essas variáveis só podem ser modificadas usando --append, nunca com --force
+	appendOnlyEnvVars = []string{
+		"PATH", "LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH",
+		"PYTHONPATH", "NODE_PATH",
+	}
+)
+
 var environmentCmd = &cobra.Command{
 	Use:   "env",
 	Short: "Gerencia variáveis de ambiente do usuário",
@@ -139,9 +168,73 @@ func getEnvironmentVariable(cmd *cobra.Command, key string) error {
 	return nil
 }
 
+// isProtectedVariable verifica se uma variável está na lista de protegidas
+func isProtectedVariable(key string) bool {
+	upperKey := strings.ToUpper(key)
+	for _, protected := range protectedEnvVars {
+		if strings.ToUpper(protected) == upperKey {
+			return true
+		}
+	}
+	return false
+}
+
+// isAppendOnlyVariable verifica se uma variável permite apenas append
+func isAppendOnlyVariable(key string) bool {
+	upperKey := strings.ToUpper(key)
+	for _, appendOnly := range appendOnlyEnvVars {
+		if strings.ToUpper(appendOnly) == upperKey {
+			return true
+		}
+	}
+	return false
+}
+
+// getPathSeparator retorna o separador correto baseado no sistema operacional
+func getPathSeparator(osType string) string {
+	if osType == "windows" {
+		return ";"
+	}
+	return ":"
+}
+
 // setEnvironmentVariable define uma variável de ambiente
 func setEnvironmentVariable(cmd *cobra.Command, osType, key, value string, shouldAppend, force bool) error {
 	verbosePrint(cmd, "Definindo variável: %s = %s", key, value)
+
+	// Verificar se é uma variável que permite apenas append
+	if isAppendOnlyVariable(key) {
+		if !shouldAppend {
+			return fmt.Errorf("erro: variável '%s' é protegida e só pode ser modificada usando --append\n\n"+
+				"Esta variável é crítica e não pode ser substituída completamente.\n"+
+				"Use 'bast env --set --key %s --value VALOR --append' para adicionar ao valor existente.", key, key)
+		}
+
+		// Validar separador no valor fornecido
+		separator := getPathSeparator(osType)
+		if strings.Contains(value, separator) {
+			return fmt.Errorf("erro: o valor não deve conter o separador '%s'\n\n"+
+				"Para variáveis como %s, forneça apenas um caminho por vez.\n"+
+				"O separador será adicionado automaticamente.", separator, key)
+		}
+
+		verbosePrint(cmd, "Variável %s permite apenas append, validando separador", key)
+	}
+
+	// Verificar se é uma variável protegida (mas não append-only)
+	if isProtectedVariable(key) && !isAppendOnlyVariable(key) {
+		if !force {
+			return fmt.Errorf("erro: variável '%s' é protegida e não pode ser modificada\n\n"+
+				"Esta variável é crítica para o funcionamento do sistema.\n"+
+				"Se você realmente deseja modificá-la, use --force (não recomendado)", key)
+		}
+
+		// Aviso para variáveis protegidas mesmo com --force
+		fmt.Printf("AVISO: Você está prestes a modificar a variável protegida '%s'\n", key)
+		fmt.Println("   Esta variável é crítica para o funcionamento do sistema.")
+		fmt.Println("   Modificá-la incorretamente pode causar problemas!")
+		fmt.Print("\n   Tem certeza que deseja continuar? Esta ação pode ser perigosa.\n\n")
+	}
 
 	// Verificar se a variável já existe
 	existingValue := os.Getenv(key)
@@ -193,8 +286,8 @@ func setWindowsEnvironmentVariable(cmd *cobra.Command, key, value string) error 
 		return fmt.Errorf("erro ao definir variável de ambiente: %w\n\nCertifique-se de que o PowerShell está disponível", err)
 	}
 
-	fmt.Printf("✓ Variável '%s' definida com sucesso!\n", key)
-	fmt.Println("\n⚠️  IMPORTANTE: É necessário reiniciar o terminal para que a variável seja reconhecida.")
+	fmt.Printf("Variável '%s' definida com sucesso!\n", key)
+	fmt.Println("\nIMPORTANTE: É necessário reiniciar o terminal para que a variável seja reconhecida.")
 	fmt.Println("   A variável foi definida no escopo do usuário, mas só estará disponível")
 	fmt.Println("   em novas sessões do terminal.")
 	verbosePrint(cmd, "Variável definida com sucesso via PowerShell")
@@ -220,7 +313,7 @@ func setUnixEnvironmentVariable(cmd *cobra.Command, key, value string) error {
 		configFile = "~/.bashrc"
 	}
 
-	fmt.Printf("⚠️  Para definir variáveis de ambiente permanentemente no %s, adicione ao seu arquivo de configuração:\n", runtime.GOOS)
+	fmt.Printf("Para definir variáveis de ambiente permanentemente no %s, adicione ao seu arquivo de configuração:\n", runtime.GOOS)
 	fmt.Printf("   export %s=\"%s\"\n", key, value)
 	fmt.Printf("\nOu execute manualmente:\n")
 	fmt.Printf("   echo 'export %s=\"%s\"' >> %s\n", key, value, configFile)
@@ -239,10 +332,10 @@ func setUnixEnvironmentVariable(cmd *cobra.Command, key, value string) error {
 	if err := os.Setenv(key, value); err != nil {
 		verbosePrint(cmd, "Aviso: não foi possível definir para a sessão atual: %v", err)
 	} else {
-		fmt.Printf("\n✓ Variável '%s' definida para a sessão atual\n", key)
+		fmt.Printf("\nVariável '%s' definida para a sessão atual\n", key)
 	}
 
-	fmt.Println("\n⚠️  IMPORTANTE: Para tornar a variável permanente, adicione ao arquivo de configuração")
+	fmt.Println("\nIMPORTANTE: Para tornar a variável permanente, adicione ao arquivo de configuração")
 	fmt.Println("   e reinicie o terminal ou recarregue o arquivo com 'source'.")
 	fmt.Println("   A variável definida acima só está disponível nesta sessão atual.")
 
@@ -253,11 +346,19 @@ func setUnixEnvironmentVariable(cmd *cobra.Command, key, value string) error {
 func deleteEnvironmentVariable(cmd *cobra.Command, osType, key string) error {
 	verbosePrint(cmd, "Verificando variável para deleção: %s", key)
 
+	// Verificar se é uma variável protegida
+	if isProtectedVariable(key) {
+		return fmt.Errorf("erro: variável '%s' é protegida e não pode ser deletada\n\n"+
+			"Esta variável é crítica para o funcionamento do sistema.\n"+
+			"Deletá-la pode causar problemas graves no sistema.\n"+
+			"Esta operação não é permitida por segurança.", key)
+	}
+
 	// Verificar se a variável existe (apenas para informar ao usuário)
 	existingValue := os.Getenv(key)
 	if existingValue == "" {
 		verbosePrint(cmd, "Variável não encontrada na sessão atual, mas pode existir no escopo do usuário")
-		fmt.Printf("⚠️  Variável '%s' não encontrada na sessão atual.\n", key)
+		fmt.Printf("Variável '%s' não encontrada na sessão atual.\n", key)
 		fmt.Println("   Tentando deletar do escopo do usuário...")
 	} else {
 		verbosePrint(cmd, "Variável encontrada na sessão atual: %s = %s", key, existingValue)
@@ -294,8 +395,8 @@ func deleteWindowsEnvironmentVariable(cmd *cobra.Command, key string) error {
 		return fmt.Errorf("erro ao deletar variável de ambiente: %w\n\nCertifique-se de que o PowerShell está disponível", err)
 	}
 
-	fmt.Printf("✓ Variável '%s' deletada com sucesso!\n", key)
-	fmt.Println("\n⚠️  IMPORTANTE: É necessário reiniciar o terminal para que a mudança seja reconhecida.")
+	fmt.Printf("Variável '%s' deletada com sucesso!\n", key)
+	fmt.Println("\nIMPORTANTE: É necessário reiniciar o terminal para que a mudança seja reconhecida.")
 	fmt.Println("   A variável foi deletada do escopo do usuário, mas ainda pode estar")
 	fmt.Println("   disponível na sessão atual do terminal até que seja reiniciado.")
 	verbosePrint(cmd, "Variável deletada com sucesso via PowerShell")
@@ -321,7 +422,7 @@ func deleteUnixEnvironmentVariable(cmd *cobra.Command, key string) error {
 		configFile = "~/.bashrc"
 	}
 
-	fmt.Printf("⚠️  Para deletar variáveis de ambiente permanentemente no %s:\n", runtime.GOOS)
+	fmt.Printf("Para deletar variáveis de ambiente permanentemente no %s:\n", runtime.GOOS)
 	fmt.Println("\n1. Remova a linha do arquivo de configuração:")
 	fmt.Printf("   %s\n", configFile)
 	fmt.Printf("   Procure por: export %s=...\n", key)
@@ -342,10 +443,10 @@ func deleteUnixEnvironmentVariable(cmd *cobra.Command, key string) error {
 	// Para versões anteriores, apenas avisar
 	if err := os.Unsetenv(key); err != nil {
 		verbosePrint(cmd, "Aviso: não foi possível remover da sessão atual: %v", err)
-		fmt.Printf("\n⚠️  Não foi possível remover '%s' da sessão atual.\n", key)
+		fmt.Printf("\nNão foi possível remover '%s' da sessão atual.\n", key)
 		fmt.Println("   Execute manualmente: unset " + key)
 	} else {
-		fmt.Printf("\n✓ Variável '%s' removida da sessão atual\n", key)
+		fmt.Printf("\nVariável '%s' removida da sessão atual\n", key)
 		fmt.Println("   Para remover permanentemente, siga as instruções acima.")
 	}
 

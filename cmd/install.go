@@ -51,7 +51,7 @@ func installGit(cmd *cobra.Command) {
 	// Verifica se o git já está instalado
 	if isGitInstalled() {
 		verbosePrint(cmd, "Git encontrado no sistema.\n")
-		fmt.Println("✓ Git já está instalado!")
+		fmt.Println("Git já está instalado!")
 		version, err := getGitVersion()
 		if version != "" {
 			fmt.Printf("  Versão: %s\n", version)
@@ -97,7 +97,7 @@ func installGit(cmd *cobra.Command) {
 	fmt.Printf("Método de instalação: %s\n", installMethod)
 	verbosePrint(cmd, "Comando completo: %s\n", installCmd.String())
 	fmt.Println("Executando comando de instalação...")
-	fmt.Println("⚠️  Nota: Você pode precisar inserir sua senha de administrador.")
+	fmt.Println("Nota: Você pode precisar inserir sua senha de administrador.")
 
 	// Para apt-get, executamos update primeiro
 	if installMethod == "apt-get" && runtime.GOOS == "linux" {
@@ -133,23 +133,23 @@ func installGit(cmd *cobra.Command) {
 		os.Exit(1)
 	}
 
-	fmt.Println("\n✓ Instalação concluída!")
+	fmt.Println("\nInstalação concluída!")
 	fmt.Println("Verificando instalação...")
 	verbosePrint(cmd, "Verificando se Git está acessível no PATH...\n")
 
 	if isGitInstalled() {
 		version, err := getGitVersion()
 		if version != "" {
-			fmt.Printf("✓ Git instalado com sucesso! Versão: %s\n", version)
+			fmt.Printf("Git instalado com sucesso! Versão: %s\n", version)
 		} else {
-			fmt.Println("✓ Git instalado com sucesso!")
+			fmt.Println("Git instalado com sucesso!")
 		}
 		if err != nil {
 			verbosePrint(cmd, "Aviso ao obter versão: %v\n", err)
 		}
 		verbosePrint(cmd, "Instalação verificada e funcionando corretamente.\n")
 	} else {
-		fmt.Println("⚠️  Git pode ter sido instalado, mas não foi encontrado no PATH.")
+		fmt.Println("Git pode ter sido instalado, mas não foi encontrado no PATH.")
 		fmt.Println("   Tente fechar e reabrir o terminal.")
 		verbosePrint(cmd, "PATH atual: %s\n", os.Getenv("PATH"))
 	}

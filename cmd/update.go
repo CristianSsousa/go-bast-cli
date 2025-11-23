@@ -62,7 +62,7 @@ Exemplos:
 		verbosePrint(cmd, "Versão atual: %s", currentVersion)
 
 		if compareVersions(currentVersion, latestVersion) >= 0 {
-			fmt.Printf("✓ Você já está usando a versão mais recente (%s)!\n", currentVersion)
+			fmt.Printf("Você já está usando a versão mais recente (%s)!\n", currentVersion)
 			return
 		}
 
@@ -104,7 +104,7 @@ Exemplos:
 			os.Exit(1)
 		}
 
-		fmt.Println("\n✓ Atualização concluída com sucesso!")
+		fmt.Println("\nAtualização concluída com sucesso!")
 		fmt.Printf("Versão instalada: %s\n", latestVersion)
 		fmt.Println("\nNota: Se o comando 'bast' não refletir a nova versão, certifique-se de que")
 		fmt.Println("o diretório $GOPATH/bin ou $GOBIN está no seu PATH.")

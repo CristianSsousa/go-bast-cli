@@ -65,7 +65,7 @@ func init() {
 }
 
 func showOSInfo(cmd *cobra.Command) {
-	fmt.Println("\n📱 Sistema Operacional:")
+	fmt.Println("\nSistema Operacional:")
 	fmt.Printf("  OS: %s\n", runtime.GOOS)
 	fmt.Printf("  Arquitetura: %s\n", runtime.GOARCH)
 	fmt.Printf("  CPUs: %d\n", runtime.NumCPU())
@@ -88,7 +88,7 @@ func showOSInfo(cmd *cobra.Command) {
 }
 
 func showGoInfo(cmd *cobra.Command) {
-	fmt.Println("\n🐹 Go:")
+	fmt.Println("\nGo:")
 	fmt.Printf("  Versão: %s\n", runtime.Version())
 	fmt.Printf("  Compilador: %s\n", runtime.Compiler)
 	fmt.Printf("  Goroutines: %d\n", runtime.NumGoroutine())
@@ -101,7 +101,7 @@ func showGoInfo(cmd *cobra.Command) {
 }
 
 func showEnvInfo(cmd *cobra.Command) {
-	fmt.Println("\n🌍 Variáveis de Ambiente Importantes:")
+	fmt.Println("\nVariáveis de Ambiente Importantes:")
 
 	envVars := []string{
 		"HOME", "USER", "USERNAME",

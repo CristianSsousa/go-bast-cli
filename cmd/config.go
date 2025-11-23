@@ -39,7 +39,7 @@ var configListCmd = &cobra.Command{
 	Long:  `Lista todas as configurações atuais do bast CLI.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := config.Get()
-		fmt.Println("📋 Configurações do bast CLI:")
+		fmt.Println("Configurações do bast CLI:")
 		fmt.Println()
 		fmt.Printf("  App:\n")
 		fmt.Printf("    Nome:        %s\n", cfg.App.Name)
@@ -83,7 +83,7 @@ Exemplos:
 		key := args[0]
 		value := viper.Get(key)
 		if value == nil {
-			fmt.Printf("❌ Chave '%s' não encontrada\n", key)
+			fmt.Printf("Chave '%s' não encontrada\n", key)
 			os.Exit(1)
 		}
 		fmt.Printf("%s = %v\n", key, value)
@@ -120,12 +120,12 @@ Exemplos:
 		// Salvar configuração
 		if err := config.Save(); err != nil {
 			appLog.Errorf(constants.ErrConfigSave+": %v", err)
-			fmt.Printf("❌ "+constants.ErrConfigSave+": %v\n", err)
+			fmt.Printf(constants.ErrConfigSave+": %v\n", err)
 			os.Exit(1)
 		}
 
-		fmt.Printf("✅ "+constants.SuccessConfigSet+"\n", key, value)
-		fmt.Println("💾 " + constants.ConfigSavedMessage)
+		fmt.Printf(constants.SuccessConfigSet+"\n", key, value)
+		fmt.Println(constants.ConfigSavedMessage)
 	},
 }
 
@@ -143,12 +143,12 @@ var configResetCmd = &cobra.Command{
 		// Salvar
 		if err := config.Save(); err != nil {
 			appLog.Errorf(constants.ErrConfigSave+": %v", err)
-			fmt.Printf("❌ "+constants.ErrConfigSave+": %v\n", err)
+			fmt.Printf(constants.ErrConfigSave+": %v\n", err)
 			os.Exit(1)
 		}
 
-		fmt.Println("✅ " + constants.ConfigResetMessage)
-		fmt.Println("💾 " + constants.ConfigSavedMessage)
+		fmt.Println(constants.ConfigResetMessage)
+		fmt.Println(constants.ConfigSavedMessage)
 	},
 }
 
@@ -160,13 +160,13 @@ var configInitCmd = &cobra.Command{
 		configPath, err := utils.GetConfigPath()
 		if err != nil {
 			appLog.Errorf("Erro ao obter caminho de configuração: %v", err)
-			fmt.Printf("❌ Erro: %v\n", err)
+			fmt.Printf("Erro: %v\n", err)
 			os.Exit(1)
 		}
 
 		// Verificar se já existe
 		if utils.FileExists(configPath) {
-			fmt.Printf("ℹ️  "+constants.InfoConfigExists+"\n", configPath)
+			fmt.Printf(constants.InfoConfigExists+"\n", configPath)
 			cfg := config.Get()
 			fmt.Printf("   "+constants.InfoConfigResetHint+"\n", cfg.App.Name)
 			return
@@ -175,18 +175,18 @@ var configInitCmd = &cobra.Command{
 		// Criar diretório se não existir
 		if err := utils.EnsureConfigDir(); err != nil {
 			appLog.Errorf("Erro ao criar diretório de configuração: %v", err)
-			fmt.Printf("❌ Erro ao criar diretório: %v\n", err)
+			fmt.Printf("Erro ao criar diretório: %v\n", err)
 			os.Exit(1)
 		}
 
 		// Salvar configuração padrão
 		if err := config.Save(); err != nil {
 			appLog.Errorf(constants.ErrConfigSave+": %v", err)
-			fmt.Printf("❌ "+constants.ErrConfigSave+": %v\n", err)
+			fmt.Printf(constants.ErrConfigSave+": %v\n", err)
 			os.Exit(1)
 		}
 
-		fmt.Printf("✅ "+constants.SuccessConfigCreated+"\n", configPath)
+		fmt.Printf(constants.SuccessConfigCreated+"\n", configPath)
 		cfg := config.Get()
 		fmt.Printf("💡 "+constants.InfoConfigEditHint+"\n", cfg.App.Name)
 	},

@@ -63,11 +63,11 @@ func checkPort(cmd *cobra.Command, port int, host string, timeout int) {
 	if err != nil {
 		// Se não conseguiu conectar, a porta provavelmente está livre
 		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-			fmt.Printf("⏱️  Timeout ao conectar em %s:%d\n", host, port)
+			fmt.Printf("Timeout ao conectar em %s:%d\n", host, port)
 			fmt.Printf("   A porta pode estar fechada ou o host não está acessível.\n")
 			verbosePrint(cmd, "Timeout após %d segundos.\n", timeout)
 		} else {
-			fmt.Printf("✅ "+constants.SuccessPortAvailable+"\n", port, host)
+			fmt.Printf(constants.SuccessPortAvailable+"\n", port, host)
 			verbosePrint(cmd, "Erro de conexão (esperado para porta livre): %v\n", err)
 		}
 		return
@@ -76,7 +76,7 @@ func checkPort(cmd *cobra.Command, port int, host string, timeout int) {
 	defer conn.Close()
 
 	// Se conseguiu conectar, a porta está em uso
-	fmt.Printf("❌ "+constants.SuccessPortInUse+"\n", port, host)
+	fmt.Printf(constants.SuccessPortInUse+"\n", port, host)
 	fmt.Printf("   Endereço: %s\n", address)
 	verbosePrint(cmd, "Conexão estabelecida com sucesso, porta está em uso.\n")
 

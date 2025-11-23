@@ -42,6 +42,9 @@ linters-settings:
       - operacional
       - Operacional
       - argumentos
+      - prestes
+      - problemas
+      - Problemas
   nolintlint:
     allow-unused: false
     require-explanation: false
